@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Markerless AR</title>
+
+  <!-- Stable A-Frame -->
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+
+  <!-- Your Local aframe-ar -->
+  <script src="./aframe-ar-main/dist/aframe-ar.min.js"></script>
+</head>
+
+<body>
+  <script>
+    function showMessage(message){
+        let hud = document.querySelector("#hud");
+        if(hud){
+          hud.setAttribute('value', message);
+        }
+    }
+
+    AFRAME.registerComponent('ar-logic',{
+      init : function(){
+        showMessage('ar-logic running');
+      },
+
+      tick : function(){
+        let cam = document.querySelector("#cam");
+        if(!cam || !cam.components.raycaster){return;}
+
+        let intersection = cam.components.raycaster.getIntersection(document.querySelector("#circle"));
+        if(!intersection){return;}
+
+        showMessage('Collision Detected!! ' + 
+          intersection.point.x.toFixed(2) + " " + 
+          intersection.point.z.toFixed(2)
+        );
+
+        let circle = document.querySelector("#circle");
+        circle.setAttribute('position', intersection.point);
+      }
+    });
+
+    window.addEventListener('touchstart', function(){
+      let box = document.querySelector("#box");
+      let circle = document.querySelector("#circle");
+
+      let posCircle = circle.object3D.position;
+      let posBox = box.object3D.position;
+
+      let distance = posBox.distanceTo(posCircle);
+
+      let position_string = `${posCircle.x.toFixed(2)} ${posCircle.y.toFixed(2)} ${posCircle.z.toFixed(2)}`;
+      
+      box.setAttribute('animation', 
+        `property: position; to: ${position_string}; dur: 1000;`
+      );
+    });
+  </script>
+
+  <a-scene ar ar-logic>
+    <a-camera id="cam" ar-raycaster raycaster="objects:none;">
+      <a-text id="hud" 
+        value="Summa Text" 
+        position="0 -0.1 -0.25"
+        align="center"
+        wrap-count="800"
+      ></a-text>
+    </a-camera>
+
+    <a-ring
+      id="circle"
+      rotation="-90 0 0"
+      radius-inner="0.01"
+      radius-outer="0.02">
+    </a-ring>
+
+    <a-box id="box" position="0 0 -1" color="red" scale="0.2 0.2 0.2"></a-box>
+
+  </a-scene>
+</body>
+</html>
