@@ -3,67 +3,97 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-  <!-- Your Local aframe-ar -->
-  <script src="./aframe-ar-main/dist/aframe-ar.min.js"></script>
-</head>
-<body>
-  <script>
-    function showMessage(message){
-      let hud = document.querySelector("#hud")
-       if(hud){
-          hud.setAttribute('value', message);
-        }
-    }
-    AFRAME.registerComponent('ar-logic',{
-      init: function(){
-        showMessage('ar-logic is working')
-      },
-      tick: function(){
-        let cam= document.querySelector("cam");
-        if(!cam || !cam.components.raycaster){
-          return;
-        }
-        let intersection = cam.components.raycaster.getIntersection(document.querySelector("#circle"));
-        if(!intersection){
-          return;
-        }
-        showMessage('Collision detected' + intersection.point.x.toFixed(2) + " " + intersection.point.z.toFixed(2));
-        let circle = document.querySelector("#circle");
-        circle.setAttribute('postion', intersection.point);
-      }
 
-    });
-    window.addEventListener('touchstart',function(){
-      let box= doucument.querySelector("#box");
-      let circle= document.querySelector("circle");
-      let pos= circle.getAttribute('position');
-      box.setAttribute('position',pos);
-    });
-  </script>
-  <a-scene ar ar-logic>
-    <a-camera id = "cam" raycaster = "objects:none">
-      <a-text id="hud"
-        value="poda"
-        position="0 -0.1 -0.25"
-        allign="center"
-        wrap-count="800"
-    ></a-text>
-    </a-camera>
-    <a-ring
-      id="circle"
-      rotation="-90 0 0"
-      inner-radius="0.01"
-      outer-radius="0.02"
-    ></a-ring>
-    <a-gltf id="box"
-      src="model/arCar.glb"
-      scale="5 5 5"
-      position="0 0 0"
-    ></a-gltf>
-    
-  </a-scene>
-  
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <script src="./aframe-ar-main/dist/aframe-ar.min.js"></script>
+
+  <title>AR Placement Fixed</title>
+</head>
+
+<body>
+
+<script>
+function showMessage(message){
+  let hud = document.querySelector("#hud");
+  if(hud){
+    hud.setAttribute('value', message);
+  }
+}
+
+AFRAME.registerComponent('ar-logic',{
+  init: function(){
+    showMessage('AR logic running');
+  },
+
+  tick: function(){
+    let cam = document.querySelector("#cam");
+
+    if(!cam || !cam.components.raycaster){
+      return;
+    }
+
+    let circle = document.querySelector("#circle");
+
+    let intersection = cam.components.raycaster.getIntersection(circle);
+
+    if(!intersection){
+      return;
+    }
+
+    showMessage(
+      'Detected: ' + 
+      intersection.point.x.toFixed(2) + " " + 
+      intersection.point.z.toFixed(2)
+    );
+
+    // FIXED TYPO HERE
+    circle.setAttribute('position', intersection.point);
+  }
+});
+
+// TAP TO PLACE MODEL
+window.addEventListener('touchstart', function(){
+  let box = document.querySelector("#box");
+  let circle = document.querySelector("#circle");
+
+  let pos = circle.getAttribute('position');
+
+  box.setAttribute('position', pos);
+  box.setAttribute('visible', true);
+});
+</script>
+
+<a-scene ar ar-logic>
+
+  <!-- CAMERA -->
+  <a-camera id="cam" ar-raycaster raycaster="objects:none;">
+    <a-text id="hud"
+      value="Starting..."
+      position="0 -0.1 -0.25"
+      align="center"
+      wrap-count="40">
+    </a-text>
+  </a-camera>
+
+  <!-- RETICLE -->
+  <a-ring
+    id="circle"
+    rotation="-90 0 0"
+    radius-inner="0.05"
+    radius-outer="0.06"
+    color="green">
+  </a-ring>
+
+  <!-- MODEL -->
+  <a-gltf-model
+    id="box"
+    src="model/arCar.glb"
+    scale="5 5 5"
+    position="0 0 0"
+    visible="false">
+  </a-gltf-model>
+
+</a-scene>
+
 </body>
 </html>
